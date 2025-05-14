@@ -1,10 +1,13 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, ForeignKey, Table
 from sqlalchemy.orm import relationship
 import datetime
+from datetime import timezone
 
 from app.db.session import Base
-from app.models.task import Task
-from app.db.session import Base
+
+def utc_now():
+    """Returns the current UTC datetime."""
+    return datetime.now(timezone.utc)
 
 # Association table for project members
 project_members = Table(
@@ -13,18 +16,32 @@ project_members = Table(
     Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
     Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True),
     Column("is_admin", Boolean, default=False),
-    Column("joined_at", DateTime, default=datetime.datetime.utcnow),
+    Column("joined_at", DateTime(timezone=True), default=utc_now),
 )
 
+
 class User(Base):
+    """
+    User model for authentication and user management.
+    
+    Attributes:
+        id: Primary key
+        email: User's email address (unique)
+        hashed_password: Securely hashed password
+        avatar_url: URL to the user's avatar image
+        is_active: Whether the user account is active
+        created_at: When the user was created
+        updated_at: When the user was last updated
+    """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    avatar_url = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 
     # Relationships

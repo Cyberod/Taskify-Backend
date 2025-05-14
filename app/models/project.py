@@ -1,9 +1,13 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, ForeignKey, Text, Float
 from sqlalchemy.orm import relationship
 import datetime
+from datetime import timezone
 
 from app.db.session import Base
 from app.models.user import project_members
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 
 class Project(Base):
@@ -16,8 +20,9 @@ class Project(Base):
     completion_percentage = Column(Float, default=0.0)
     is_completed = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # Relationships
     owner = relationship("User", back_populates="owned_projects")

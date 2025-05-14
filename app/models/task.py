@@ -1,9 +1,13 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, Text, Enum
 from sqlalchemy.orm import relationship
-import datetime
-import enum
+import datetime, enum
+from datetime import timezone
 
 from app.db.session import Base
+
+def utc_now():
+    """Returns the current UTC datetime."""
+    return datetime.now(timezone.utc)
 
 
 class TaskStatus(str, enum.Enum):
@@ -29,10 +33,11 @@ class Task(Base):
     # priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
     is_general_pool = Column(Boolean, default=False)
     deadline = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     project_id = Column(Integer, ForeignKey("projects.id"))
     assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     # Relationships
     project = relationship("Project", back_populates="tasks")
