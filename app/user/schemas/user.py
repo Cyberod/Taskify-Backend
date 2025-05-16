@@ -34,6 +34,15 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
+
+class UserLogin(BaseModel):
+    """
+    Schema for user login.
+    Requires an email and password.
+    """
+    email: EmailStr
+    password: str
+
 class config:
     """
     Configurations for the UserResponse schema.
