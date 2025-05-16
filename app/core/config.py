@@ -1,81 +1,62 @@
-import secrets
-from typing import Any, Dict, List, Optional, Union
-
-from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Annotated, Any, Literal
+
+from pydantic import (
+    AnyUrl,
+    BeforeValidator,
+    computed_field,
+    PostgresDsn,
+    Field
+)
+
+from pydantic_core import MultiHostUrl
+
+
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
+
 
 class Settings(BaseSettings):
-    """
-    Application settings.
-    
-    These settings are loaded from environment variables or .env file.
-    """
-    # API settings
-    API_V1_STR: str
-    PROJECT_NAME: str
-    
-    # Security settings
-    SECRET_KEY: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    ALGORITHM: str
-    
-    # Server settings
-    SERVER_HOST: str
-    SERVER_PORT: int
-    DEBUG: bool
-    
-    # CORS settings
-    BACKEND_CORS_ORIGINS: List[str] = []
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra="ignore",
+        env_ignore_empty = True,
+    )
+    DOMAIN: str = 'localhost'
+    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    JWT_SECRET_KEY: str
 
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
-        """Parse CORS origins from string or list."""
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
-    
-    # Database settings
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    @computed_field
+    @property
+    def server_host(self) -> str:
+        # Use HTTPS for anything other than local development
+        if self.ENVIRONMENT == "local":
+            return f"http://{self.DOMAIN}"
+        return f"https://{self.DOMAIN}"
 
-    @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
-    @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info: Dict[str, Any]) -> Any:
-        """Assemble database URI from components."""
-        if isinstance(v, str):
-            return v
-        
-        values = info.data
-        return PostgresDsn.build(
-            scheme="postgresql",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
+    BACKEND_CORS_ORIGINS: Annotated[
+        list[AnyUrl] | str, BeforeValidator(parse_cors)
+    ] = Field(default_factory=list)
+
+    POSTGRESQL_USERNAME: str
+    POSTGRESQL_PASSWORD: str
+    POSTGRESQL_SERVER: str
+    POSTGRESQL_PORT: int
+    POSTGRESQL_DATABASE: str
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+        return MultiHostUrl.build(
+            scheme="postgresql+psycopg2",
+            username=self.POSTGRESQL_USERNAME,
+            password=self.POSTGRESQL_PASSWORD,
+            host=self.POSTGRESQL_SERVER,
+            port=self.POSTGRESQL_PORT,
+            path=self.POSTGRESQL_DATABASE,
         )
-    
-    # Email settings (for future use)
-    EMAILS_ENABLED: bool = False
-    SMTP_TLS: bool = True
-    SMTP_PORT: Optional[int] = None
-    SMTP_HOST: Optional[str] = None
-    SMTP_USER: Optional[str] = None
-    SMTP_PASSWORD: Optional[str] = None
-    EMAILS_FROM_EMAIL: Optional[EmailStr] = None
-    EMAILS_FROM_NAME: Optional[str] = None
-    
-    model_config = {
-        """Pydantic config for Settings."""
-        "case_sensitive": True,
-        "env_file": ".env",
-        "env_file_encoding": "utf-8"
-    }
-
-# Create settings instance
-settings = Settings()
