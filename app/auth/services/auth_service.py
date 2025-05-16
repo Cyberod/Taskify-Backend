@@ -2,7 +2,7 @@ from typing import Annotated
 
 from jwt.exceptions import InvalidTokenError
 from auth.models.token import TokenData
-from auth.utils.auth_utils import verify_password
+from app.auth.utils.hashing import verify_password
 from core.config_loader import settings
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from core.database import get_db
 from user.models.user import User
-from user.services.user_service import get_user_by_email
+from app.user.services.user import get_user_by_email
 
 SECRET_KEY = settings.JWT_SECRET_KEY
 ALGORITHM = "HS256"
