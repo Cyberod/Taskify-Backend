@@ -3,8 +3,8 @@ from sqlalchemy import select
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 
-from app.user.models.user import User
-from app.user.schemas.user import UserLogin
+from app.user.models.user_models import User
+from app.user.schemas.user_schema import UserLogin
 from app.auth.utils.jwt_handler import create_access_token
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -3,8 +3,9 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from app.auth.utils.hashing import Hasher
-from app.user.models.user import User
-from app.user.schemas.user import UserCreate
+from app.user.models.user_models import User
+from app.user.schemas.user_schema import UserCreate
+from uuid import UUID
 
 
 async def create_user(user_data: UserCreate, db: AsyncSession) -> User:
@@ -38,5 +39,32 @@ async def create_user(user_data: UserCreate, db: AsyncSession) -> User:
             detail="Email already registered",
         )
     
+    return user
+
+
+async def get_user_by_id(user_id: UUID, db: AsyncSession) -> User:
+    """
+    Get a user by their ID.
+
+    Args:
+        user_id (UUID): The ID of the user.
+        db (AsyncSession): The database session.
+
+    Returns:
+        User: The user object.
+
+    Raises:
+        HTTPException: If the user is not found.
+    """
+    query = select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
     return user
 

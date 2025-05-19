@@ -13,8 +13,8 @@ import uuid
 
 
 class UserRole(str, PyEnum):
-    ADMIN = "admin"
-    MEMBER = "member"
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"
 
 
 class User(Base):
