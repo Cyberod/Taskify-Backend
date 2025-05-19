@@ -33,3 +33,11 @@ class User(Base):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )
+
+
+class BlacklistedToken(Base):
+    __tablename__ = "blacklisted_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    jti: Mapped[str] = mapped_column(unique=True, nullable=False)
+    blacklisted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

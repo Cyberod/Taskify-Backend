@@ -4,7 +4,12 @@ from app.db.session import get_db
 from app.user.schemas.user_schema import UserCreate, UserResponse
 from app.user.services.user_services import create_user
 from app.user.dependencies.user_dependencies import get_current_user
-from app.user.models.user_models import User, UserRole
+from app.user.models.user_models import User, UserRole, BlacklistedToken 
+from sqlalchemy.exc import IntegrityError
+from app.core.config import settings
+from jose import JWTError, jwt
+
+
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -90,3 +95,47 @@ async def admin_only_route(current_user: User = Depends(get_current_user)):
         "user_id": str(current_user.id),
         "email": current_user.email,
     }
+
+@router.post("/logout")
+async def logut(current_user: User = Depends(get_current_user), token: str = Depends(settings.oauth2_scheme), db: AsyncSession = Depends(get_db)):
+    """
+    Endpoint to log out the current user by blacklisting the token.
+
+        Args:
+            current_user (User): The current user.
+            token (str): The JWT token.
+            db (AsyncSession): The database session.
+
+        Returns:
+            dict: A message indicating the user has been logged out.
+
+        Raises:
+            HTTPException: If the token is invalid or the user is not found.
+    """
+
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        jti = payload.get("jti")
+        if jti is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        blacklisted_token = BlacklistedToken(jti=jti)
+        db.add(blacklisted_token)
+        await db.commit()
+        return {
+            "message": "Logged out successfully",
+            "user_id": str(current_user.id),
+            "email": current_user.email,
+
+        }   
+    except (JWTError, IntegrityError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Logout failed",
+        )
+    
+
+

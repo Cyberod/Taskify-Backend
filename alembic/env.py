@@ -60,10 +60,22 @@ def run_migrations_online() -> None:
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
+    # For asyncpg, we need to modify the URL to use the sync driver
+    config_section = config.get_section(config.config_ini_section, {})
+    
+    # Get the URL from settings and convert to string
+    url_str = str(settings.SQLALCHEMY_DATABASE_URI)
+    
+    # Replace asyncpg with psycopg2 if present
+    if 'postgresql+asyncpg://' in url_str:
+        url_str = url_str.replace('postgresql+asyncpg://', 'postgresql://')
+    
+    # Override the sqlalchemy.url with our modified URL
+    config_section['sqlalchemy.url'] = url_str
+    
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        config_section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
@@ -76,6 +88,7 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 
 if context.is_offline_mode():

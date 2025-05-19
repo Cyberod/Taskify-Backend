@@ -4,9 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.user.models.user_models import User, UserRole
+from app.user.models.user_models import User, UserRole, BlacklistedToken
 from app.user.schemas.user_schema import TokenData
 from app.user.services.user_services import get_user_by_id
+from sqlalchemy import select
 
 
 oauth2_scheme = settings.oauth2_scheme
@@ -36,9 +37,14 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")
-        if user_id is None:
+        jti: str = payload.get("jti")
+        if user_id is None or jti is None:
             raise credentials_exception
         token_data = TokenData(id=user_id)
+        stmt = select(BlacklistedToken).where(BlacklistedToken.jti == jti)
+        result = await db.execute(stmt)
+        if result.scalar_one_or_none():
+            raise credentials_exception
     except JWTError:
         raise credentials_exception
 
