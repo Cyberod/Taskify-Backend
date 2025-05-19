@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Annotated, Any, Literal
+from fastapi.security import OAuth2PasswordBearer
 
 from pydantic import (
     AnyUrl,
@@ -30,6 +31,9 @@ class Settings(BaseSettings):
     DOMAIN: str = 'localhost'
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     JWT_SECRET_KEY: str
+
+    oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(tokenUrl="/login")
+    
 
     @computed_field
     @property

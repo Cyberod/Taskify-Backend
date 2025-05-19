@@ -48,3 +48,16 @@ class config:
     Configurations for the UserResponse schema.
     """
     from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class TokenData(BaseModel):
+    """
+    Schema for token data.
+    Contains the user ID.
+    """
+    sub: UUID | None = None
