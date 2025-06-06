@@ -1,6 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Annotated, Any, Literal
 from fastapi.security import OAuth2PasswordBearer
+from fastapi_mail import ConnectionConfig
+import os
 
 from pydantic import (
     AnyUrl,
@@ -32,6 +34,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
+    PROJECT_NAME: str = "Taskify"
 
     oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(tokenUrl="auth/login")
     
@@ -64,6 +67,29 @@ class Settings(BaseSettings):
             host=self.POSTGRESQL_SERVER,
             port=self.POSTGRESQL_PORT,
             path=self.POSTGRESQL_DATABASE,
+        )
+    
+
+    EMAIL_ENABLED: bool = Field(default=True)
+
+    SMTP_HOST: str = Field(default="smtp.gmail.com")
+    SMTP_PORT: int = Field(default=587)
+    SMTP_USERNAME: str 
+    SMTP_PASSWORD: str 
+    SMTP_SENDER_EMAIL: str
+
+    @property
+    def fastmail_config(self):
+        return ConnectionConfig(
+            MAIL_USERNAME=self.SMTP_USERNAME,
+            MAIL_PASSWORD=self.SMTP_PASSWORD,
+            MAIL_FROM=self.SMTP_SENDER_EMAIL,
+            MAIL_PORT=self.SMTP_PORT,
+            MAIL_SERVER=self.SMTP_HOST,
+            MAIL_STARTTLS=True,
+            MAIL_SSL_TLS=False,
+            USE_CREDENTIALS=True,
+            VALIDATE_CERTS=True
         )
     
 

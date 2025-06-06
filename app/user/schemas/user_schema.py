@@ -8,8 +8,8 @@ class UserRole(str, Enum):
     """
     Enum for user roles.
     """
-    ADMIN = "admin"
-    MEMBER ="member"
+    ADMIN = "ADMIN"
+    MEMBER ="MEMBER"
 
 
 class UserCreate(BaseModel):
@@ -43,11 +43,11 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class config:
-    """
-    Configurations for the UserResponse schema.
-    """
-    from_attributes = True
+    class config:
+        """
+        Configurations for the UserResponse schema.
+        """
+        from_attributes = True
 
 
 class Token(BaseModel):

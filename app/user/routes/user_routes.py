@@ -8,6 +8,7 @@ from app.user.models.user_models import User, UserRole, BlacklistedToken
 from sqlalchemy.exc import IntegrityError
 from app.core.config import settings
 from jose import JWTError, jwt
+from app.user.routes import user_reset
 
 
 
@@ -136,6 +137,8 @@ async def logut(current_user: User = Depends(get_current_user), token: str = Dep
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Logout failed",
         )
+
+
     
 
 
