@@ -19,7 +19,7 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return task_services.create_task(task_data, db)
+    return await task_services.create_task(task_data, db, current_user.id)
 
 
 

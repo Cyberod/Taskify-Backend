@@ -3,9 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.task.models.task_models import Task
 from app.task.schemas.task_schemas import TaskCreate, TaskUpdate
+from app.project.services import project_services
+
+from fastapi import Depends, HTTPException
 
 
-async def create_task(task_data: TaskCreate, db: AsyncSession) -> Task:
+async def create_task(task_data: TaskCreate, db: AsyncSession, current_user_id: UUID,) -> Task:
     """Create a new task in the database.
         Args:
 
@@ -16,6 +19,13 @@ async def create_task(task_data: TaskCreate, db: AsyncSession) -> Task:
         Task: The created task object.
         
     """
+    project = await project_services.get_project_by_id(task_data.project_id, db)
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project with ID {task_data.project_id} not found.")
+
+    if project.owner_id != current_user_id:
+        raise HTTPException(status_code=404, detail=f"Access Denied. You are not the owner of the project {task_data.project_id}.")
+    
     task = Task(**task_data.model_dump())
     db.add(task)
     await db.commit()

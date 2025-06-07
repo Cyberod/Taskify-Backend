@@ -23,7 +23,7 @@ class Task(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.TODO)
-    due_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    due_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id"))
     assignee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
