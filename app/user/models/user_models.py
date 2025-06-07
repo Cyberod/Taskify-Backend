@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from enum import Enum as PyEnum
 from datetime import datetime, timezone
 from sqlalchemy import (
@@ -10,6 +10,8 @@ from sqlalchemy import (
 from app.db.base import Base
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+
+
 
 
 class UserRole(str, PyEnum):
@@ -26,7 +28,13 @@ class User(Base):
     avatar_url: Mapped[str | None] = mapped_column(String(256), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, name="user_role"), default=UserRole.MEMBER, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner", cascade="all, delete-orphan")
+    tasks_assigned: Mapped[list["Task"]] = relationship("Task", back_populates="assignee", cascade="all, delete-orphan")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
+        nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
