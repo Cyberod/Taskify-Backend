@@ -4,14 +4,16 @@ from sqlalchemy import select
 from app.task.models.task_models import Task
 from app.task.schemas.task_schemas import TaskCreate, TaskUpdate
 from app.project.services import project_services
+from app.project.utils.project_utils import recalculate_project_completion
 
 from fastapi import Depends, HTTPException
 
 
-async def create_task(task_data: TaskCreate, db: AsyncSession, current_user_id: UUID,) -> Task:
+async def create_task(project_id: UUID, task_data: TaskCreate, db: AsyncSession, current_user_id: UUID,) -> Task:
     """Create a new task in the database.
         Args:
 
+        project_id (UUID): The ID of the project to which the task belongs.
         task_data (TaskCreate): The data for the task to be created.
         db (AsyncSession): The database session.
 
@@ -26,10 +28,11 @@ async def create_task(task_data: TaskCreate, db: AsyncSession, current_user_id: 
     if project.owner_id != current_user_id:
         raise HTTPException(status_code=404, detail=f"Access Denied. You are not the owner of the project {task_data.project_id}.")
     
-    task = Task(**task_data.model_dump())
+    task = Task(**task_data.model_dump(), project_id=project_id)
     db.add(task)
     await db.commit()
     await db.refresh(task)
+    await recalculate_project_completion(project_id, db)
     return task
 
 
@@ -45,7 +48,10 @@ async def get_task_by_id(task_id: UUID, db: AsyncSession) -> Task | None:
         Task | None: The task object if found, otherwise None.
     """
     result = await db.execute(select(Task).where(Task.id == task_id))
-    return result.scalar_one_or_none()
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(status_code=404, detail=f"Task with ID {task_id} not found.")
+    return task
 
 
 async def get_tasks_by_project(project_id: UUID, db: AsyncSession) -> list[Task]:
@@ -75,16 +81,30 @@ async def update_task(task_id: UUID, task_data: TaskUpdate, db: AsyncSession) ->
 
     await db.commit()
     await db.refresh(task)
+    await recalculate_project_completion(task.project_id, db)
     return task
 
 
 async def delete_task(task_id: UUID, db: AsyncSession) -> bool:
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-
-    if task is None:
-        return False
+    task = await get_task_by_id(task_id, db)
+    project_id = task.project_id
 
     await db.delete(task)
     await db.commit()
-    return True
+    await recalculate_project_completion(project_id, db)
+    return {"messge": "Task deleted successfully."}
+
+
+async def get_tasks_by_user(user_id: UUID, db: AsyncSession) -> list[Task]:
+    """Retrieve all tasks assigned to a specific user.
+
+            Args:
+
+            user_id (UUID): The ID of the user to retrieve tasks for.
+            db (AsyncSession): The database session.
+
+            Returns:
+            list[Task]: A list of task objects assigned to the user.
+    """
+    result = await db.execute(select(Task).where(Task.assigned_to == user_id))
+    return result.scalars().all()
