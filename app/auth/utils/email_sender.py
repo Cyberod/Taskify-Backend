@@ -55,3 +55,40 @@ async def send_reset_email(email_to: str, otp: str) -> bool:
     except Exception as e:
         print(f"Failed to send email to {email_to}: {e}")
         return False
+    
+
+
+async def send_invite_email(email_to: str, token: str) -> bool:
+    """
+    Send a project invitation email with a token to the user using FastMail.
+
+        Args:
+            email_to (str): The recipient's email address.
+            token (str): The invite token to be sent.
+
+        Returns:
+            bool: True if the email was sent successfully, False otherwise.
+        """
+    # Remember to replace with your actual frontend URL
+    invite_link = f"{settings.FRONTEND_URL}/accept-invite?token={token}"
+    message = MessageSchema(
+        subject=f"{settings.PROJECT_NAME} - Project Invitation",
+        recipients=[email_to],
+        body=f"""
+        <p>Hello,</p>
+        <p>You have been invited to join a project on {settings.PROJECT_NAME}.</p>
+        <p>Click the link below to accept the invitation:</p>
+        <p><a href="{invite_link}">Accept Project Invitation</a></p>
+        <p>This invitation expires in 48 hours.</p>
+        <p>Best regards,<br>The {settings.PROJECT_NAME} Team</p>
+        """,
+        subtype=MessageType.html
+    )
+
+    fm = FastMail(settings.fastmail_config)
+    try:
+        await fm.send_message(message)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send invite email to {email_to}: {e}")
+        return False

@@ -9,6 +9,7 @@ from app.user.models.user_models import User
 from app.user.models.reset_models import PasswordResetCode
 from app.project.models.project_models import Project
 from app.task.models.task_models import Task
+from app.project.models.invite_models import ProjectInvite
 
 from alembic import context
 

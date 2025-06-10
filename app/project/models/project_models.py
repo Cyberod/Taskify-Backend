@@ -38,4 +38,5 @@ class Project(Base):
 
     owner: Mapped["User"] = relationship("User", back_populates="projects")
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="project", cascade="all, delete-orphan")
+    invites: Mapped[list["ProjectInvite"]] = relationship("ProjectInvite", back_populates="project", cascade="all, delete-orphan")
 

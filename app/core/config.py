@@ -36,8 +36,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     PROJECT_NAME: str = "Taskify"
 
+    FRONTEND_URL: str = Field(default="http://localhost:3000", description="URL of the frontend application")
     oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(tokenUrl="auth/login")
-    
+    INVITE_EXPIRATION_DAYS: int = 3
 
     @computed_field
     @property
