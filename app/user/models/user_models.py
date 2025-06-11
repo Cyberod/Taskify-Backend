@@ -30,6 +30,7 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, name="user_role"), default=UserRole.MEMBER, nullable=False)
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner", cascade="all, delete-orphan")
     tasks_assigned: Mapped[list["Task"]] = relationship("Task", back_populates="assignee", cascade="all, delete-orphan")
+    project_members: Mapped[list["ProjectMember"]] = relationship("ProjectMember", back_populates="user")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 

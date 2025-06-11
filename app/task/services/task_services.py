@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.task.models.task_models import Task
 from app.task.schemas.task_schemas import TaskCreate, TaskUpdate
-from app.project.services import project_services
+from app.project.services import project_service
 from app.project.utils.project_utils import recalculate_project_completion
 
 from fastapi import Depends, HTTPException
@@ -21,7 +21,7 @@ async def create_task(project_id: UUID, task_data: TaskCreate, db: AsyncSession,
         Task: The created task object.
         
     """
-    project = await project_services.get_project_by_id(task_data.project_id, db)
+    project = await project_service.get_project_by_id(task_data.project_id, db)
     if not project:
         raise HTTPException(status_code=404, detail=f"Project with ID {task_data.project_id} not found.")
 

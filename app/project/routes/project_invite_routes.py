@@ -56,8 +56,10 @@ async def accept_project_invite(
     """
     
     try:
-        invite = await service.accept_project_invite(invite_data.token, current_user.id, db)
-        return invite
+        result =  await service.accept_project_invite(
+            invite_data.token, current_user.id, db
+        )
+        return result
     except ValueError as e:
         # Handle different error cases with appropriate HTTP status codes
         error_message = str(e)
