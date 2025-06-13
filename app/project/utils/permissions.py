@@ -199,6 +199,7 @@ async def require_project_permission(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"You don't have permission to {permission.value} in this project"
         )
+    
 
 
 async def get_user_accessible_projects(
