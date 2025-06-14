@@ -28,6 +28,7 @@ async def get_my_projects(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    
     return await services.get_user_projects(current_user.id, db)
 
 

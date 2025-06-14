@@ -46,6 +46,6 @@ class Task(Base):
     assignee_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_by_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    project: Mapped["Project"] = relationship(back_populates="tasks")
-    assignee: Mapped["User"] = relationship(back_populates="tasks_assigned")
+    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
+    assignee: Mapped["User"] = relationship("User", foreign_keys= [assignee_id], back_populates="tasks_assigned")
     created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
