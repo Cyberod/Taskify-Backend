@@ -137,7 +137,7 @@ async def get_project_completion_stats(
         name=project.name,
         description=project.description,
         completion_percentage=project.completion_percentage,
-        task_counts=task_counts,
+        tasks_count=task_counts,
         days_until_deadline=days_until_deadline,
         deadline=project.deadline,
         health_status=health_status,

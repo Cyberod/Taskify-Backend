@@ -14,6 +14,28 @@ from app.user.schemas.user_analytics_schemas import (
 router = APIRouter(prefix="/users", tags=["User Analytics"])
 
 
+@router.get("/me/analytics", response_model=UserOverallMetrics)
+async def get_my_metrics(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get metrics for the current user.
+    
+    Args:
+        db: Database session
+        current_user: Current authenticated user
+        
+    Returns:
+        UserOverallMetrics: Current user's complete metrics
+    """
+    return await user_analytics_service.get_user_overall_metrics(
+        current_user.id, db, current_user.id
+    )
+
+
+
+
 @router.get("/{user_id}/analytics", response_model=UserOverallMetrics)
 async def get_user_metrics(
     user_id: UUID,
@@ -36,25 +58,6 @@ async def get_user_metrics(
         user_id, db, current_user.id
     )
 
-
-@router.get("/me/analytics", response_model=UserOverallMetrics)
-async def get_my_metrics(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Get metrics for the current user.
-    
-    Args:
-        db: Database session
-        current_user: Current authenticated user
-        
-    Returns:
-        UserOverallMetrics: Current user's complete metrics
-    """
-    return await user_analytics_service.get_user_overall_metrics(
-        current_user.id, db, current_user.id
-    )
 
 
 @router.get("/analytics/team", response_model=TeamProductivityMetrics)

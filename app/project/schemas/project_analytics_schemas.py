@@ -60,10 +60,10 @@ class ProjectHealthStats(BaseModel):
     color_code: str #Hex color code representing health status
 
 
-class ProjectAnalyticsDashboard:
+class ProjectAnalyticsDashboard(BaseModel):
     """Comprehensive project analytics for Dashboard"""
     project_stats: ProjectCompletionStats
-    user_contribution: List[UserContribution]
+    user_contributions: List[UserContribution]
     recent_activity: Optional[List] = None  # If you want, this can be done later @Goodluck
 
 

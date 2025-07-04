@@ -174,7 +174,7 @@ async def get_tasks_by_project(
         enriched_task = await _enrich_task_with_user_info(task, db)
         enriched_tasks.append(enriched_task)
 
-    return enriched_task
+    return enriched_tasks
 
 
 async def get_general_pool_tasks(
