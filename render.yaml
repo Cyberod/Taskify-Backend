@@ -1,7 +1,7 @@
 databases:
   - name: taskify-db
     databaseName: taskify
-    user: postgres
+    user: taskify_user
     plan: free
 
 services:
