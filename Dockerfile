@@ -13,6 +13,7 @@ RUN apt-get update \
         build-essential \
         libpq-dev \
         curl \
+        git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies

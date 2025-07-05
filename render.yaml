@@ -24,7 +24,7 @@ services:
       
       # Security Settings
       - key: JWT_SECRET_KEY
-        generateValue: true
+        value: ABSaCK8n-kLk53tPtQ2j8l1DpToegzhie6wa89CFV40
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: 10080
       - key: ALGORITHM
@@ -64,7 +64,7 @@ services:
       
       # Email Settings
       - key: EMAIL_ENABLED
-        value: True
+        value: "true"
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT

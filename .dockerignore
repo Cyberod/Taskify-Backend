@@ -36,3 +36,4 @@ tests/
 docker-compose.yml
 # Don't exclude .env.docker - we need it in the container
 !.env.docker
+!.env.production

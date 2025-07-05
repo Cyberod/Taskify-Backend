@@ -32,11 +32,6 @@ app = FastAPI(
 # Enhanced CORS middleware for production
 allowed_origins = [
     "https://taskify-seven-iota.vercel.app",  # Your Vercel frontend
-    "https://taskify-seven-iota.vercel.app/dashboard",  # Dashboard subpath
-    "https://taskify-seven-iota.vercel.app/login",  # Login subpath
-    "https://taskify-seven-iota.vercel.app/register",  # Register subpath
-    "https://taskify-seven-iota.vercel.app/reset-password",  # Reset password
-    "https://taskify-seven-iota.vercel.app/verify-email",  # Verify
     "http://localhost:3000",                   # Local development
     "http://localhost:5173",                   # Vite dev server
     "http://127.0.0.1:3000",                  # Alternative localhost

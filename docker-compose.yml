@@ -33,7 +33,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRESQL_USERNAME}:${POSTGRESQL_PASSWORD}@db:5432/${POSTGRESQL_DATABASE}
     env_file:
-      - .env.docker
+      - .env.production
     networks:
       - docker-fastapi-base
     restart: unless-stopped
