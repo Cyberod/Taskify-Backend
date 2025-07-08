@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
 
 from app.core.config import settings
 from app.db.session import get_db
@@ -40,7 +41,7 @@ async def get_current_user(
         jti: str = payload.get("jti")
         if user_id is None or jti is None:
             raise credentials_exception
-        token_data = TokenData(id=user_id)
+        token_data = TokenData(sub=user_id)
         stmt = select(BlacklistedToken).where(BlacklistedToken.jti == jti)
         result = await db.execute(stmt)
         if result.scalar_one_or_none():
@@ -48,7 +49,7 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    user = await get_user_by_id(user_id, db)
+    user = await get_user_by_id(UUID(user_id), db)
     if user is None:
         raise credentials_exception
 

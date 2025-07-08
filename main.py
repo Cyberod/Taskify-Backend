@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from datetime import datetime
 import asyncpg
 
@@ -85,6 +87,52 @@ async def not_found_exception_handler(request, exc):
         content={
             "status": "error",
             "message": "Resource not found",
+            "timestamp": datetime.utcnow().isoformat(),
+            "path": str(request.url)
+        }
+    )
+
+# Custom exception handler for validation errors
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom handler for request validation errors (422 Unprocessable Entity)
+    """
+    errors = []
+    for error in exc.errors():
+        field = " -> ".join(str(loc) for loc in error["loc"])
+        message = error["msg"]
+        errors.append(f"{field}: {message}")
+
+    return JSONResponse(
+        status_code=422,
+        content = {
+            "status": "error",
+            "message": "Validation failed",
+            "errors": errors,
+            "timestamp": datetime.utcnow().isoformat(),
+            "path": str(request.url)
+        }
+    )
+
+# Custom exception handler for Pydantic validation errors
+@app.exception_handler(ValidationError)
+async def pydantic_validation_exception_handler(request: Request, exc: ValidationError):
+    """
+    Custom handler for Pydantic validation errors
+    """
+    errors = []
+    for error in exc.errors():
+        field = " -> ".join(str(loc) for loc in error["loc"])
+        message = error["msg"]
+        errors.append(f"{field}: {message}")
+
+    return JSONResponse(
+        status_code=400,
+        content={
+            "status": "error",
+            "message": "Invalid Input data",
+            "errors": errors,
             "timestamp": datetime.utcnow().isoformat(),
             "path": str(request.url)
         }

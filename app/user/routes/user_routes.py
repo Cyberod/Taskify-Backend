@@ -1,14 +1,18 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from pydantic import ValidationError
+from jose import JWTError, jwt
+
+
+
 from app.db.session import get_db
 from app.user.schemas.user_schema import UserCreate, UserResponse
 from app.user.services.user_services import create_user
 from app.user.dependencies.user_dependencies import get_current_user
 from app.user.models.user_models import User, UserRole, BlacklistedToken 
-from sqlalchemy.exc import IntegrityError
 from app.core.config import settings
-from jose import JWTError, jwt
-from app.user.routes import user_reset
+
 
 
 
@@ -33,13 +37,24 @@ async def signup(
             HTTPException: If the email already exists in the database.
             HttpException: If the email or password is not provided.
     """
-    if not user_data.email or not user_data.password:
+    try:
+        return await create_user(user_data, db)
+    except ValidationError as e:
+        error_messages = []
+        for error in e.errors():
+            error_messages.append(error["msg"])
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email and password are required",
+            status_code=400,
+            detail=f"Invalid input: {', '.join(error_messages)}"
         )
-    
-    return await create_user(user_data, db)
+    except HTTPException:
+        # Re-raise HTTP exceptions from create_user (like email already exists)
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred during signup"
+        )
 
 @router.get("/me")
 async def get_current_user_data(current_user: User = Depends(get_current_user)):
