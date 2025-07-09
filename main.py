@@ -16,6 +16,7 @@ from app.project.routes import project_invite_routes as project_invite_routes
 from app.project.routes import project_member_routes as project_member_routes
 from app.project.routes import project_analytics_routes as project_analytics_routes
 from app.user.routes import user_analytics_routes as user_analytics_routes
+from app.user.routes import user_verification_routes as user_verification_routes
 
 # Import settings
 from app.core.config import settings
@@ -226,6 +227,7 @@ app.include_router(project_invite_routes.router)
 app.include_router(project_member_routes.router)
 app.include_router(project_analytics_routes.router)
 app.include_router(user_analytics_routes.router)
+app.include_router(user_verification_routes.router)
 
 if __name__ == "__main__":
     import uvicorn

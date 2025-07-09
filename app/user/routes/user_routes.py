@@ -11,6 +11,7 @@ from app.user.schemas.user_schema import UserCreate, UserResponse
 from app.user.services.user_services import create_user
 from app.user.dependencies.user_dependencies import get_current_user
 from app.user.models.user_models import User, UserRole, BlacklistedToken 
+from app.user.services.user_verification_service import send_verification_code
 from app.core.config import settings
 
 
@@ -25,6 +26,7 @@ async def signup(
 ) -> UserResponse:
     """
     Endpoint to create a new user.
+    User account will be created but inactive until email verification.
 
         Args:
             user_data (UserCreate): The data for the new user.
@@ -35,10 +37,21 @@ async def signup(
 
         Raises:
             HTTPException: If the email already exists in the database.
-            HttpException: If the email or password is not provided.
+            HTTPException: If the email or password is not provided.
     """
     try:
-        return await create_user(user_data, db)
+        # Create user (will be inactive by default)
+        user = await create_user(user_data, db)
+        
+        # Send verification email
+        try:
+            await send_verification_code(user.email, db)
+        except Exception as e:
+            # Log the error but don't fail the signup
+            print(f"Failed to send verification email: {e}")
+        
+        return user
+        
     except ValidationError as e:
         error_messages = []
         for error in e.errors():

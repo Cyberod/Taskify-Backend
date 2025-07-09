@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from app.db.base import Base
 from app.core.config_loader import settings
 from app.user.models.user_models import User
+from app.user.models.email_verification_models import EmailVerification
 from app.user.models.reset_models import PasswordResetCode
 from app.project.models.project_models import Project
 from app.task.models.task_models import Task

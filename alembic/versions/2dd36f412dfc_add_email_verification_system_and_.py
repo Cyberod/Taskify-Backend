@@ -1,8 +1,8 @@
-"""initial_migration
+"""Add email verification system and update user model
 
-Revision ID: 7acfde57b1ab
+Revision ID: 2dd36f412dfc
 Revises: 
-Create Date: 2025-06-14 02:53:45.090864
+Create Date: 2025-07-09 01:28:03.898437
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7acfde57b1ab'
+revision: str = '2dd36f412dfc'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,6 +28,20 @@ def upgrade() -> None:
     sa.UniqueConstraint('jti')
     )
     op.create_index(op.f('ix_blacklisted_tokens_id'), 'blacklisted_tokens', ['id'], unique=False)
+    op.create_table('email_verifications',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('code', sa.String(length=255), nullable=False),
+    sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('is_used', sa.Boolean(), nullable=False),
+    sa.Column('attempts', sa.Integer(), nullable=False),
+    sa.Column('resend_count', sa.Integer(), nullable=False),
+    sa.Column('last_resend_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_email_verifications_id'), 'email_verifications', ['id'], unique=False)
+    op.create_index(op.f('ix_email_verifications_user_id'), 'email_verifications', ['user_id'], unique=False)
     op.create_table('password_reset_codes',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
@@ -43,6 +57,7 @@ def upgrade() -> None:
     sa.Column('password', sa.String(length=128), nullable=False),
     sa.Column('avatar_url', sa.String(length=256), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.Column('role', sa.Enum('ADMIN', 'MEMBER', name='user_role'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
@@ -56,6 +71,7 @@ def upgrade() -> None:
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('status', sa.Enum('ACTIVE', 'COMPLETED', 'ARCHIVED', name='projectstatus'), nullable=False),
     sa.Column('completion_percentage', sa.Float(), nullable=False),
+    sa.Column('deadline', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('owner_id', sa.UUID(), nullable=False),
@@ -117,6 +133,9 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_index(op.f('ix_password_reset_codes_id'), table_name='password_reset_codes')
     op.drop_table('password_reset_codes')
+    op.drop_index(op.f('ix_email_verifications_user_id'), table_name='email_verifications')
+    op.drop_index(op.f('ix_email_verifications_id'), table_name='email_verifications')
+    op.drop_table('email_verifications')
     op.drop_index(op.f('ix_blacklisted_tokens_id'), table_name='blacklisted_tokens')
     op.drop_table('blacklisted_tokens')
     # ### end Alembic commands ###

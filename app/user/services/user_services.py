@@ -26,6 +26,8 @@ async def create_user(user_data: UserCreate, db: AsyncSession) -> User:
         email=user_data.email,
         password=Hasher.get_password_hash(user_data.password),
         avatar_url=user_data.avatar_url,
+        is_active=False,  # User will be inactive until verified
+        is_verified=False,  # User will be unverified initially
     )
 
     db.add(user)

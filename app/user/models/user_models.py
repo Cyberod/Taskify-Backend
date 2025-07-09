@@ -26,8 +26,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     role: Mapped[UserRole] = mapped_column(SqlEnum(UserRole, name="user_role"), default=UserRole.MEMBER, nullable=False)
+
 
 
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner", cascade="all, delete-orphan")

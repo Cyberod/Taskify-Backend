@@ -92,3 +92,39 @@ async def send_invite_email(email_to: str, token: str) -> bool:
     except Exception as e:
         logger.error(f"Failed to send invite email to {email_to}: {e}")
         return False
+    
+
+# Add this function to your existing email_sender.py
+
+async def send_verification_email(email_to: str, otp: str) -> bool:
+    """
+    Send an email verification OTP to the user using FastMail.
+
+        Args:
+            email_to (str): The recipient's email address.
+            otp (str): The OTP code to be sent.
+
+        Returns:
+            bool: True if the email was sent successfully, False otherwise.
+    """
+    message = MessageSchema(
+        subject=f"{settings.PROJECT_NAME} - Verify Your Email",
+        recipients=[email_to],
+        body=f"""
+        <p>Welcome to {settings.PROJECT_NAME}!</p>
+        <p>Please verify your email address using the following code:</p>
+        <h2 style="color: #007bff; font-size: 32px; letter-spacing: 5px;">{otp}</h2>
+        <p>This verification code is valid for 10 minutes.</p>
+        <p>If you did not create an account, please ignore this email.</p>
+        <p>Best regards,<br>The {settings.PROJECT_NAME} Team</p>
+        """,
+        subtype=MessageType.html
+    )
+    fm = FastMail(settings.fastmail_config)
+    try:
+        await fm.send_message(message)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {email_to}: {e}")
+        return False
+
