@@ -35,7 +35,7 @@ app = FastAPI(
 # Enhanced CORS middleware for production
 allowed_origins = [
     "https://taskify-seven-iota.vercel.app",  # The Vercel frontend
-    "https://taskify-backend-9wzr.onrender.com",  # My Render backend
+    "https://taskify-backend-ajlg.onrender.com/",  # My Render backend
     "http://localhost:3000",                   # Local development
     "http://localhost:5173",                   # Vite dev server
     "http://127.0.0.1:3000",                  # Alternative localhost
@@ -214,7 +214,10 @@ async def root():
         "docs": "/docs",
         "health": "/health",
         "simple_health": "/health/simple",
-        "project": settings.PROJECT_NAME
+        "project": settings.PROJECT_NAME,
+        "backend_url": "https://taskify-backend-ajlg.onrender.com/",
+        "frontend_url": "https://taskify-seven-iota.vercel.app",
+        "cors_origins": allowed_origins
     }
 
 # Include routers
