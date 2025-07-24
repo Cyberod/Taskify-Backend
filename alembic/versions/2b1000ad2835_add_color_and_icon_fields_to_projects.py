@@ -1,8 +1,8 @@
-"""Add email verification system and update user model
+"""Add color and icon fields to projects
 
-Revision ID: 2dd36f412dfc
+Revision ID: 2b1000ad2835
 Revises: 
-Create Date: 2025-07-09 01:28:03.898437
+Create Date: 2025-07-24 21:33:05.363121
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2dd36f412dfc'
+revision: str = '2b1000ad2835'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -55,6 +55,9 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('email', sa.String(length=64), nullable=False),
     sa.Column('password', sa.String(length=128), nullable=False),
+    sa.Column('first_name', sa.String(length=50), nullable=True),
+    sa.Column('last_name', sa.String(length=50), nullable=True),
+    sa.Column('onboarding_completed', sa.Boolean(), nullable=False),
     sa.Column('avatar_url', sa.String(length=256), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
@@ -71,6 +74,8 @@ def upgrade() -> None:
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('status', sa.Enum('ACTIVE', 'COMPLETED', 'ARCHIVED', name='projectstatus'), nullable=False),
     sa.Column('completion_percentage', sa.Float(), nullable=False),
+    sa.Column('color', sa.String(length=7), nullable=True),
+    sa.Column('icon', sa.String(length=50), nullable=True),
     sa.Column('deadline', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
