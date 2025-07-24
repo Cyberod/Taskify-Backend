@@ -45,6 +45,15 @@ async def get_user_overall_metrics(
     if not requesting_user:
         raise HTTPException(status_code=404, detail="Requesting user not found")
     
+
+    # Check if requesting user has completed onboarding (except for viewing own data)
+    if requesting_user_id != user_id:
+        if requesting_user.is_verified and not requesting_user.onboarding_completed:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Complete onboarding to access this feature"
+            )
+
     # Allow if viewing own data or if admin
     if user_id != requesting_user_id and requesting_user.role != UserRole.ADMIN:
         raise HTTPException(
@@ -92,6 +101,7 @@ async def get_user_overall_metrics(
     return UserOverallMetrics(
         user_id=user.id,
         user_email=user.email,
+        user_name=f"{user.first_name} {user.last_name}" if user.first_name and user.last_name else user.email,
         user_avatar_url=user.avatar_url,
         total_projects=total_projects,
         total_assigned_tasks=total_assigned_tasks,
@@ -204,6 +214,13 @@ async def get_team_productivity_metrics(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
+    # Add onboarding check after admin validation
+    if user.is_verified and not user.onboarding_completed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Complete onboarding to access admin features"
+        )
+
     
     # Get basic counts
     active_projects_query = select(func.count(Project.id)).where(

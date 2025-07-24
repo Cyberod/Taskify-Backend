@@ -1,8 +1,7 @@
 from uuid import UUID
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, field_validator
 import re
 
 
@@ -24,7 +23,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, max_length=128, description="Password must be between 8 and 128 characters.")
     avatar_url: str | None = None
 
-    @validator('email')
+    @field_validator('email')
     def validate_email(cls, v):
         """
         validate email format
@@ -38,7 +37,7 @@ class UserCreate(BaseModel):
             raise ValueError("Invalid email format")
         return v.lower().strip()
     
-    @validator('password')
+    @field_validator('password')
     def validate_password(cls, v):
         """
         Validate password strength.
@@ -60,6 +59,8 @@ class UserResponse(BaseModel):
     avatar_url: str | None = None
     role: UserRole
     is_active: bool
+    is_verified: bool
+    onboarding_completed: bool
     created_at: datetime
 
 
@@ -71,13 +72,13 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128, description="Password is required")
 
-    @validator('email')
+    @field_validator('email')
     def validate_email(cls, v):
         if not v or not v.strip():
             raise ValueError('Email cannot be empty')
         return v.lower().strip()
 
-    @validator('password')
+    @field_validator('password')
     def validate_password(cls, v):
         if not v or not v.strip():
             raise ValueError('Password cannot be empty')

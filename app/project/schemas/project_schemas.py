@@ -9,6 +9,8 @@ class ProjectBase(BaseModel):
     name: str = Field(..., max_length=255, description="Name of the project")
     description: str | None = Field(None, max_length=1000, description="Description of the project")
     status: ProjectStatus = Field(ProjectStatus.ACTIVE, description="Current status of the project")
+    color: str | None = Field("#3b82f6", max_length=7, description="Project color in hex format")
+    icon: str | None = Field("folder", max_length=50, description="Project icon name")
     deadline: datetime | None = Field(None, description="Project deadline")
 
 
@@ -21,6 +23,8 @@ class ProjectUpdate(BaseModel):
     name: str | None = Field(None, max_length=255, description="Name of the project")
     description: str | None = Field(None, max_length=1000, description="Description of the project")
     status: ProjectStatus | None = Field(None, description="Current status of the project")
+    color: str | None = Field(None, max_length=7, description="Project color in hex format")
+    icon: str | None = Field(None, max_length=50, description="Project icon name")
     deadline: datetime | None = Field(None, description="Project deadline")
 
 

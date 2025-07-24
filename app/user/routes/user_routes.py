@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from app.db.session import get_db
 from app.user.schemas.user_schema import UserCreate, UserResponse
 from app.user.services.user_services import create_user
-from app.user.dependencies.user_dependencies import get_current_user
+from app.user.dependencies.user_dependencies import get_current_user, get_current_user_with_onboarding_check
 from app.user.models.user_models import User, UserRole, BlacklistedToken 
 from app.user.services.user_verification_service import send_verification_code
 from app.core.config import settings
@@ -95,13 +95,41 @@ async def get_current_user_data(current_user: User = Depends(get_current_user)):
     return {
         "id": str(current_user.id),
         "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
         "avatar_url": current_user.avatar_url,
         "role": current_user.role,
+        "is_verified": current_user.is_verified,
+        "onboarding_completed": current_user.onboarding_completed,
+        "requires_onboarding": current_user.is_verified and not current_user.onboarding_completed,
     }
 
 
+@router.get("/profile")
+async def get_user_profile(current_user: User = Depends(get_current_user_with_onboarding_check)):
+    """
+    Get full user profile. This endpoint requires completed onboarding.
+
+        Args:
+            current_user (User): The current user with completed onboarding.
+
+        Returns:
+            dict: The current user profile.
+    """
+    return {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "full_name": f"{current_user.first_name} {current_user.last_name}",
+        "avatar_url": current_user.avatar_url,
+        "role": current_user.role,
+        "created_at": current_user.created_at,
+        "updated_at": current_user.updated_at
+    }
+
 @router.get("/admin")
-async def admin_only_route(current_user: User = Depends(get_current_user)):
+async def admin_only_route(current_user: User = Depends(get_current_user_with_onboarding_check)):
     """
     Admin-only route to demonstrate role-based access control.
 
@@ -123,6 +151,7 @@ async def admin_only_route(current_user: User = Depends(get_current_user)):
         "message": "Welcome, Admin!",
         "user_id": str(current_user.id),
         "email": current_user.email,
+        "full_name": f"{current_user.first_name} {current_user.last_name}",
     }
 
 @router.post("/logout")

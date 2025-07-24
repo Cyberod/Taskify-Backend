@@ -33,6 +33,8 @@ class Project(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(SqlEnum(ProjectStatus), default=ProjectStatus.ACTIVE)
     completion_percentage: Mapped[float] = mapped_column(Float, default=0.0)
+    color: Mapped[str | None] = mapped_column(String(7), nullable=True, default="#3b82f6")  # Default blue color
+    icon: Mapped[str | None] = mapped_column(String(50), nullable=True, default="folder")  # Default folder icon
     deadline: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True

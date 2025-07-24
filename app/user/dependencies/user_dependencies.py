@@ -56,8 +56,40 @@ async def get_current_user(
     return user
 
 
+
+async def get_current_user_with_onboarding_check(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """
+    Get the current user and ensure onboarding is completed.
+    This should be used for endpoints that require full user setup.
+
+        Args:
+            token (str): The JWT token.
+            db (AsyncSession): The database session.
+
+        Returns:
+            User: The user object.
+
+        Raises:
+            HTTPException: If the token is invalid, user is not found, or onboarding is incomplete.
+    """
+    user = await get_current_user(token, db)
+    
+    # Check if user has completed onboarding
+    if user.is_verified and not user.onboarding_completed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Onboarding must be completed before accessing this resource",
+            headers={"X-Onboarding-Required": "true"}
+        )
+    
+    return user
+
+
 async def require_admin_user(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user_with_onboarding_check),
 ) -> User:
     """
     Dependency to ensure the current user is an admin.

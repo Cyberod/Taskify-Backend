@@ -25,6 +25,7 @@ class UserOverallMetrics(BaseModel):
     """Overall user metrics across all project"""
     user_id: UUID
     user_email: str
+    user_name: Optional[str] = None  # Full name if available, otherwise email
     user_avatar_url: Optional[str] = None
     total_projects: int
     total_assigned_tasks: int
