@@ -12,6 +12,7 @@ from app.project.models.project_models import Project
 from app.task.models.task_models import Task
 from app.project.models.invite_models import ProjectInvite
 from app.project.models.member_models import ProjectMember
+from app.project.models.file_models import ProjectFile
 
 from alembic import context
 

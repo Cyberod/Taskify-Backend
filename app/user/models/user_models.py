@@ -38,6 +38,7 @@ class User(Base):
     projects: Mapped[list["Project"]] = relationship("Project", back_populates="owner", cascade="all, delete-orphan")
     tasks_assigned: Mapped[list["Task"]] = relationship("Task",foreign_keys="Task.assignee_id", back_populates="assignee")
     project_members: Mapped[list["ProjectMember"]] = relationship("ProjectMember", back_populates="user")
+    uploaded_files: Mapped[list["ProjectFile"]] = relationship("ProjectFile", back_populates="uploader")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
